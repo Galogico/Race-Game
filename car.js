@@ -1,50 +1,100 @@
 class Car {
-    constructor (game, context, x, y) {
+    constructor(game, context, x, y, color) {
         this.game = game;
         this.ctx = context;
         this.w = 100;
         this.h = 50;
-        this.location = [x, y];
-        this.velocity = [0, 0];
+        this.pos = { x: x, y: y };
+        this.velocity = { x: 0, y: 0 };
         this.angle = 0;
-        this.tranlation = [x, y];
-        window.addEventListener('keydown', (e) => {
-            if (e.key === 'w') {this.accelerate();}
-            if (e.key === 's') {this.break();}
-            if (e.key === 'a') {this.rotateLeft();}
-            if (e.key === 'd') {this.rotateRight();}
+        this.tranlation = { x: x, y: y };
+        this.color = color;
+        
+        this.keys = [];
+        
+        window.addEventListener("keydown", e => {
+            this.keys[e.keyCode] = true;
+        });
+        window.addEventListener("keyup", e => {
+            this.keys[e.keyCode] = false;
         });
     }
-    draw () {
+    draw() {
         this.ctx.save();
-        this.ctx.translate(this.tranlation[0], this.tranlation[1]);
+        this.ctx.translate(this.tranlation.x, this.tranlation.y);
         this.ctx.rotate(this.angle);
-        this.ctx.fillRect(-this.w*0.75, -this.h/2, this.w, this.h);
+        this.ctx.fillStyle = this.color;
+        this.ctx.fillRect(-this.w * 0.75, -this.h / 2, this.w, this.h);
         this.ctx.restore();
+        this.ctx.fillRect(this.pos.x, this.pos.y, 10, 10);
     }
-    update () {
-        this.location[0] += this.velocity[0] * Math.cos(this.angle);
-        this.location[1] += this.velocity[1] * Math.sin(this.angle);
-
-        this.velocity = this.velocity.map(vel => vel/1.01);
-
-        this.tranlation[0] = this.location[0];  
-        this.tranlation[1] = this.location[1];
+    update() {
+        this.pos.x += this.velocity.x * Math.cos(this.angle);
+        this.pos.y += this.velocity.y * Math.sin(this.angle);
+        this.tranlation = this.pos;
     }
-    accelerate () {
-        this.velocity[0] += 1;
-        this.velocity[1] += 1;
+    accelerate() {
+        this.velocity.x += 0.5;
+        this.velocity.y += 0.5;
     }
-    break () {
-        this.velocity[0] /= 1.1;
-        this.velocity[1] /= 1.1;
+    break() {
+        this.velocity.x /= 1.1;
+        this.velocity.y /= 1.1;
     }
-    rotateLeft () {
+    rotateLeft() {
         this.angle -= 0.05;
     }
-    rotateRight () {
+    rotateRight() {
         this.angle += 0.05;
+    }
+    collide(other) { //rect & rect
+        if (other.pos.x + other.w > this.pos.x && other.pos.x < this.pos.x + this.w) { // horizontal collision
+            if (other.pos.y + other.h > this.pos.y && other.pos.y < this.pos.y + this.h) { // vertical collision
+                return true;
+            }
+        }
     }
 }
 
-//export default Car;
+class Keyboard extends Car {
+    constructor(game, context, x, y, color) {
+        super(game, context, x, y, color);
+    }
+    update () {
+        this.velocity.x /= 1.05;
+        this.velocity.y /= 1.05;
+        super.update();
+        if (this.keys[83]) {
+            this.break();
+        }
+        if (this.keys[87]) {
+            this.accelerate();
+        }
+        if (this.keys[65]) {
+            this.rotateLeft();
+        }
+        if (this.keys[68]) {
+            this.rotateRight()
+        }
+
+        if (this.collide(this.game.AiPlayer)) {    
+        
+        }
+    }
+}
+
+
+class Ai extends Car {
+    constructor(game, context, x, y, color) {
+        super(game, context, x, y, color);
+        this.maxVel = 4;
+    }
+    update () {
+        super.update();
+        this.velocity.x = this.maxVel;
+        this.velocity.y = this.maxVel;
+
+        let AngleBetween = Math.atan2(-this.pos.y + this.game.player.pos.y, -this.pos.x + this.game.player.pos.x);
+        this.angle = AngleBetween;
+    }
+}

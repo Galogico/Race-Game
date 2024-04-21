@@ -1,24 +1,23 @@
-//import Car from "car.js"
+window.addEventListener('load', function () {
+  const canvas = document.getElementById('canvas1');
+  const ctx = canvas.getContext('2d');
+  canvas.width = 1500;
+  canvas.height = 750;
+  //ctx.fillStyle = 'white';
+  ctx.strokeStyle = 'white';
+  ctx.font = '30px Impact';
 
-class Game {
-  constructor (canvas, context) {
-      this.canvas = canvas;
-      this.ctx = context;
-
-      this.player = new Car(this, context, 300, 250);
-      this.gameObjects = [this.player];
+  const game = {
+    define: function () {
+      this.player = new Keyboard(this, ctx, 100, 150, 'red');
+      this.AiPlayer = new Ai(this, ctx, 760, 450, 'green');
+      this.gameObjects = [this.player, this.AiPlayer];
 
       this.spriteUpdate = false;
       this.spriteTimer = 0;
-      this.spriteInterval = 150;
-
-      window.addEventListener('keydown', (e) => {
-        if (e.code === 'Backspace' && this.typed.length > 0) {
-          this.typed = this.typed.substring(0, this.typed.length-1);
-        }
-      });   
-    }
-    render (deltaTime) {
+      this.spriteInterval = 150;   
+    },
+    render: function(deltaTime) {
       // sprite timing
       if (this.spriteTimer > this.spriteInterval) {
         this.spriteUpdate = true;
@@ -29,32 +28,21 @@ class Game {
         this.spriteTimer += deltaTime;
       }
       // render
-      this.gameObjects.forEach(obj => { 
+      this.gameObjects.forEach(obj => {
         obj.update();
         obj.draw();
       });
     }
-}
+  }
+  game.define();
 
-
-window.addEventListener('load', function() {
-    const canvas = document.getElementById('canvas1');
-    const ctx = canvas.getContext('2d');
-    canvas.width = 1100;
-    canvas.height = 650;
-    ctx.fillStyle = 'white';
-    ctx.strokeStyle = 'white';
-    ctx.font = '30px Impact';
-
-    const game = new Game(canvas, ctx);
-    
-    let lastTime = 0;
-    function animate (timeStamp) {
-      const deltaTime = timeStamp - lastTime;
-      lastTime = timeStamp;
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      game.render(ctx, deltaTime);
-      requestAnimationFrame(animate);
-    }
-    animate(0);
-  });
+  let lastTime = 0;
+  function animate(timeStamp) {
+    const deltaTime = timeStamp - lastTime;
+    lastTime = timeStamp;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    game.render(deltaTime);
+    requestAnimationFrame(animate);
+  }
+  animate(0);
+});
