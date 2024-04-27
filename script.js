@@ -1,3 +1,22 @@
+function renderProgram(game, canvas, ctx) {
+  ctx.save();
+  ctx.translate(-game.player.pos.x + canvas.width/2, -game.player.pos.y + canvas.height/2);
+
+  game.maps.draw(ctx);
+  // render
+  game.gameObjects.forEach(obj => {
+    obj.update();
+    obj.draw(ctx);
+    if (obj instanceof Ai) {
+      obj.pathCollision();
+      obj.lookAt(game.maps.current.path[obj.nextPath]);
+    }
+  });
+
+  ctx.restore();
+}
+
+
 window.addEventListener('load', function () {
   const canvas = document.getElementById('canvas1');
   const ctx = canvas.getContext('2d');
@@ -9,29 +28,15 @@ window.addEventListener('load', function () {
 
   const game = {
     define: function () {
-      this.player = new Keyboard(this, ctx, 100, 150, 'red');
-      this.AiPlayer = new Ai(this, ctx, 760, 450, 'green');
+      this.player = new Keyboard(this, 0, 0, 'red');
+      this.AiPlayer = new Ai(this, 0, 0, 'green');
       this.gameObjects = [this.player, this.AiPlayer];
 
       this.spriteUpdate = false;
       this.spriteTimer = 0;
-      this.spriteInterval = 150;   
-    },
-    render: function(deltaTime) {
-      // sprite timing
-      if (this.spriteTimer > this.spriteInterval) {
-        this.spriteUpdate = true;
-        this.spriteTimer = 0;
-      }
-      else {
-        this.spriteUpdate = false;
-        this.spriteTimer += deltaTime;
-      }
-      // render
-      this.gameObjects.forEach(obj => {
-        obj.update();
-        obj.draw();
-      });
+      this.spriteInterval = 150;
+
+      this.maps = new Maps();
     }
   }
   game.define();
@@ -41,8 +46,21 @@ window.addEventListener('load', function () {
     const deltaTime = timeStamp - lastTime;
     lastTime = timeStamp;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    game.render(deltaTime);
+    spriteTiming(game, deltaTime);
+    renderProgram(game, canvas, ctx);
     requestAnimationFrame(animate);
   }
   animate(0);
 });
+
+function spriteTiming (game, deltaTime) {
+  // sprite timing
+  if (game.spriteTimer > game.spriteInterval) {
+    game.spriteUpdate = true;
+    game.spriteTimer = 0;
+  }
+  else {
+    game.spriteUpdate = false;
+    game.spriteTimer += deltaTime;
+  }
+}

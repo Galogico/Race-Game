@@ -1,8 +1,12 @@
 #canvas1 {
+    background: grey;
     border: 5px solid black;
     position: absolute;
     top: 50%;
     left: 50%;
     translate: -50% -47%;
-    background-color: darkkhaki;
-  }
+}
+
+#tilesMap {
+  display: none;
+}
